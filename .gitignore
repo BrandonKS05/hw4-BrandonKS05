@@ -1,0 +1,9 @@
+/*
+src/*
+tests/*
+!.gitignore
+!*.md
+!*.rkt
+!.github
+!src
+!tests
