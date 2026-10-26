@@ -61,7 +61,28 @@
   (number-in-month-helper dates 0))
 
 
-(define (file-size-total-tr) null)
+
+; Computes the total size of every file in a file system in a tail-recursive manner.
+;
+; @param  file-system A list of file and folder structs, where folders may contain
+;                     further files and folders.
+; @return The sum of the sizes of all files in the file system.
+(define (file-size-total-tr file-system)
+  ; Processes a work list of files and folders. Files add their size to the running total,
+  ; while the contents of folders are placed on the front of the work list to be processed.
+  ;
+  ; @param  remaining The files and folders that have not been processed yet.
+  ; @param  total     The combined size of the files processed so far.
+  ; @return The total file size once no files or folders remain.
+  (define (file-size-helper remaining total)
+    (cond
+      [(null? remaining) total]
+      [(file? (car remaining))
+       (file-size-helper (cdr remaining) (+ total (file-size (car remaining))))]
+      [(folder? (car remaining))
+       (file-size-helper (append (folder-contents (car remaining)) (cdr remaining)) total)]
+      [else (file-size-helper (cdr remaining) total)]))
+  (file-size-helper (if (list? file-system) file-system (list file-system)) 0))
 
 
 ; Constructs a stream that produces values that are powers of two starting with two.
@@ -81,7 +102,17 @@
                       (lambda () (next-thunk (* num 2)))))])
     (lambda () (next-thunk 2))))
 
-(define (stream-for-n-steps) null)
+; Collects the first n values produced by a stream into a list.
+;
+; @param  strm A stream, which is a thunk that produces a pair of a value and another stream.
+; @param  n    A non-negative integer giving the number of values to collect.
+; @return A list of the first n values of the stream, in order.
+(define (stream-for-n-steps strm n)
+  (if (<= n 0)
+      null
+      (let ([next-pair (strm)])
+        (cons (car next-pair) (stream-for-n-steps (cdr next-pair) (- n 1))))))
+
 
 (define funky-stream null)
 
