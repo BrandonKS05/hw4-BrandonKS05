@@ -114,8 +114,47 @@
         (cons (car next-pair) (stream-for-n-steps (cdr next-pair) (- n 1))))))
 
 
-(define funky-stream null)
+; Constructs a stream of the natural numbers starting with one, where every number divisible
+; by five is negated.
+;
+; @return A stream of the natural numbers with multiples of five negated.
+(define funky-stream
+  (letrec
+      ; Returns a pair containing the next number in the stream and a thunk that can
+      ; generate subsequent numbers in the stream.
+      ;
+      ; @param  num The next natural number.
+      ; @return A pair containing a number (negated if divisible by five) and a thunk.
+      ([next-thunk (lambda (num)
+                     (cons
+                      (if (= (remainder num 5) 0) (- num) num)
+                      (lambda () (next-thunk (+ num 1)))))])
+    (lambda () (next-thunk 1))))
 
-(define this-then-that null)
 
-(define stream-add-zero null)
+; Constructs a stream whose values alternate between the strings "If this" and "Then that",
+; starting with "If this".
+;
+; @return A stream of alternating "If this" and "Then that" strings.
+(define this-then-that
+  (letrec
+      ; Returns a pair containing "If this" and the thunk that produces "Then that" next.
+      ;
+      ; @return A pair containing "If this" and a thunk.
+      ([this-thunk (lambda () (cons "If this" that-thunk))]
+       ; Returns a pair containing "Then that" and the thunk that produces "If this" next.
+       ;
+       ; @return A pair containing "Then that" and a thunk.
+       [that-thunk (lambda () (cons "Then that" this-thunk))])
+    this-thunk))
+
+
+; Constructs a stream that produces the values of the given stream, each paired with a zero.
+;
+; @param  strm A stream, which is a thunk that produces a pair of a value and another stream.
+; @return A stream whose i-th value is the dotted pair (0 . x), where x is the i-th value
+;         of strm.
+(define (stream-add-zero strm)
+  (lambda ()
+    (let ([next-pair (strm)])
+      (cons (cons 0 (car next-pair))))))
