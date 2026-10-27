@@ -157,4 +157,4 @@
 (define (stream-add-zero strm)
   (lambda ()
     (let ([next-pair (strm)])
-      (cons (cons 0 (car next-pair))))))
+      (cons (cons 0 (car next-pair)) (stream-add-zero (cdr next-pair))))))
